@@ -1,7 +1,15 @@
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
+import argparse
 
+
+# Input: parse command line arguements
+parser = argparse.ArgumentParser(description="AI bot")
+parser.add_argument("user_prompt", type=str, help="User prompt")
+args = parser.parse_args()
+
+# Load env variables and initialise client
 load_dotenv()
 api_key = os.environ.get("OPENROUTER_API_KEY")
 
@@ -13,16 +21,18 @@ client = OpenAI(
     api_key=api_key,
 )
 
+# Process: pass the captured variable into api call
 response = client.chat.completions.create(
     model="openrouter/free",
     messages=[
         {
             "role": "user",
-            "content": "What is Swiss Re",
+            "content": args.user_prompt,
         }
     ],
 )
 
+# output: Validate and print results
 if not response.usage:
     raise RuntimeError("API response appears to be malformed")
 
