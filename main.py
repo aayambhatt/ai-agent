@@ -4,6 +4,30 @@ from openai import OpenAI
 import argparse
 
 
+def generate_content(client, messages):
+    """Generate content using the OpenRouter API and return the response.
+    
+    Args:
+        client: OpenAI client configured for OpenRouter
+        messages: List of message dictionaries for the conversation
+        
+    Returns:
+        OpenAI response object containing the generated content
+        
+    Raises:
+        RuntimeError: If the API response is malformed
+    """
+    response = client.chat.completions.create(
+        model="openrouter/free",
+        messages=messages
+    )
+    
+    if not response.usage:
+        raise RuntimeError("API response appears to be malformed")
+    
+    return response
+
+
 # Input: parse command line arguements
 parser = argparse.ArgumentParser(description="AI bot")
 parser.add_argument("user_prompt", type=str, help="User prompt")
@@ -21,21 +45,18 @@ client = OpenAI(
     api_key=api_key,
 )
 
-# Process: pass the captured variable into api call
-response = client.chat.completions.create(
-    model="openrouter/free",
-    messages=[
+# create the messages list variable
+messages=[
         {
             "role": "user",
             "content": args.user_prompt,
         }
-    ],
-)
+    ]
+
+# Process: pass the captured variable into api call using the helper function
+response = generate_content(client, messages)
 
 # output: Validate and print results
-if not response.usage:
-    raise RuntimeError("API response appears to be malformed")
-
 print("Prompt tokens: ", response.usage.prompt_tokens)
 print("Response tokens: ", response.usage.completion_tokens)
 
